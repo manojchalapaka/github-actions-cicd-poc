@@ -1,8 +1,28 @@
-name: Hello World
-on: workflow_dispatch
+name: Hello World Upgrade
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
 jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
-      - name: Hello Step
-        run: echo "Welcome to GHA"
+      - name: 👤 Who Triggered This?
+        run: |
+          echo "=========================================="
+          echo "🚀 Pipeline Triggered By: ${{ github.actor }}"
+          echo "📁 Repository: ${{ github.repository }}"
+          echo "🌿 Branch: ${{ github.ref }}"
+          echo "=========================================="
+
+      - name: 🖥️ Runner System Information
+        run: |
+          echo "Logged in as user: $(whoami)"
+          echo "System Architecture: $(uname -a)"
+          echo "Current Date & Time: $(date)"
+          echo "Working Directory: $(pwd)"
+
+      - name: 🎉 Completion Greeting
+        run: echo "GitHub Actions Level-Up Completed Successfully for Manoj!"
