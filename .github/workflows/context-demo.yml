@@ -1,13 +1,16 @@
 ﻿name: Context Variables Demo Pipeline
+
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   context-audit:
     name: 🔍 GitHub Context & Runner Deep-Dive Audit
     runs-on: ubuntu-latest
+
     steps:
       - name: 👤 1. Inspect Individual GitHub Contexts
         run: |
@@ -20,14 +23,16 @@ jobs:
           echo "🆔 Commit SHA: ${{ github.sha }}"
           echo "📋 Workflow Name: ${{ github.workflow }}"
           echo "=========================================="
+
       - name: 📜 2. Print All Variables Under github Context (JSON Dump)
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
           echo "=========================================="
           echo "🔍 COMPLETE GITHUB CONTEXT DUMP:"
-          cat << 'EOF'
-${{ toJson(github) }}
-EOF
+          echo "$GITHUB_CONTEXT"
           echo "=========================================="
+
       - name: 🖥️ 3. Inspect System & Runner Environment Variables
         run: |
           echo "=========================================="
