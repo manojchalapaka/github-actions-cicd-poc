@@ -1,45 +1,27 @@
-name: Hello World
+name: GitHub Action Demo
 
 on:
   push:
     branches:
       - main
-      - develop
-      - 'release/**'
-  pull_request:
-    types:
-      - opened
-    branches:
-      - main
   workflow_dispatch:
 
-# 1. Workflow-level Environment Variable (Defined directly in YAML)
-env:
-  PIPELINE_MAINTAINER: "Manoj DevOps Engineer"
-  NODE_VERSION: "20.x"
-
 jobs:
-  build:
-    name: 🔨 Application Build & Variable Audit
+  action-demo:
+    name: 🚀 GitHub Marketplace Action Demo
     runs-on: ubuntu-latest
     
-    # 2. Job-level Environment Variable
-    env:
-      BUILD_MODE: "Production-Optimized"
-
     steps:
-      - name: ⚙️ Print Workflow & Job Environment Variables
-        run: |
-          echo "=========================================="
-          echo "👤 Pipeline Maintainer: ${{ env.PIPELINE_MAINTAINER }}"
-          echo "📦 Node Version: ${{ env.NODE_VERSION }}"
-          echo "🚀 Build Mode: ${{ env.BUILD_MODE }}"
-          echo "=========================================="
+      - name: 📥 Checkout the code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
 
-      - name: 🌐 Print GitHub Repository Variables (Settings UI)
+      - name: 📂 Verify Checked Out Repository Files
         run: |
           echo "=========================================="
-          echo "📱 Application Name: ${{ vars.APP_NAME }}"
-          echo "🔌 Application Port: ${{ vars.APP_PORT }}"
-          echo "🌍 Target Environment: ${{ vars.DEPLOY_ENV }}"
+          echo "📁 Current Working Directory: $(pwd)"
+          echo "📄 Listing checked out repository files:"
+          ls -la
           echo "=========================================="
