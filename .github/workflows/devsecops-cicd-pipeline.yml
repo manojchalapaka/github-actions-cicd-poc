@@ -7,20 +7,39 @@ on:
       - develop
       - 'release/**'
   pull_request:
+    types:
+      - opened
     branches:
       - main
   workflow_dispatch:
 
+# 1. Workflow-level Environment Variable (Defined directly in YAML)
+env:
+  PIPELINE_MAINTAINER: "Manoj DevOps Engineer"
+  NODE_VERSION: "20.x"
+
 jobs:
   build:
-    name: 🔨 Application Build
+    name: 🔨 Application Build & Variable Audit
     runs-on: ubuntu-latest
+    
+    # 2. Job-level Environment Variable
+    env:
+      BUILD_MODE: "Production-Optimized"
+
     steps:
-      - name: ⚙️ Build Step
+      - name: ⚙️ Print Workflow & Job Environment Variables
         run: |
           echo "=========================================="
-          echo "🔨 Starting Build for Event: ${{ github.event_name }}"
-          echo "Target Branch: ${{ github.ref }}"
-          echo "Triggered by: ${{ github.actor }}"
-          echo "A demo build completed successfully!"
+          echo "👤 Pipeline Maintainer: ${{ env.PIPELINE_MAINTAINER }}"
+          echo "📦 Node Version: ${{ env.NODE_VERSION }}"
+          echo "🚀 Build Mode: ${{ env.BUILD_MODE }}"
+          echo "=========================================="
+
+      - name: 🌐 Print GitHub Repository Variables (Settings UI)
+        run: |
+          echo "=========================================="
+          echo "📱 Application Name: ${{ vars.APP_NAME }}"
+          echo "🔌 Application Port: ${{ vars.APP_PORT }}"
+          echo "🌍 Target Environment: ${{ vars.DEPLOY_ENV }}"
           echo "=========================================="
