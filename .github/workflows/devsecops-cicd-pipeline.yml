@@ -1,60 +1,20 @@
-name: Production Multi-Job Workflow
+name: Hello World
 
 on:
-  workflow_dispatch:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  # ========================================================
-  # 1. BUILD JOB (First to run)
-  # ========================================================
   build:
     name: 🔨 Application Build
     runs-on: ubuntu-latest
     steps:
-      - name: ⚙️ Compile & Validate Source
+      - name: ⚙️ Build Step
         run: |
           echo "=========================================="
-          echo "🔨 STAGE 1: APPLICATION BUILD PHASE"
-          echo "Compiling source code and preparing binaries..."
-          sleep 3
-          echo "✅ Build Completed Successfully!"
-          echo "=========================================="
-
-  # ========================================================
-  # 2. TEST JOB (Starts ONLY after Build is complete)
-  # ========================================================
-  test:
-    name: 🧪 Automated Testing
-    needs: build                  # 👈 Build complete ayyake idi start avthundhi!
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🧪 Execute Unit & Integration Tests
-        run: |
-          echo "=========================================="
-          echo "🧪 STAGE 2: TEST AUTOMATION PHASE"
-          echo "Running unit test suites..."
-          sleep 3
-          echo "Test Case 1: PASSED ✓"
-          echo "Test Case 2: PASSED ✓"
-          echo "✅ All Tests Passed Successfully!"
-          echo "=========================================="
-
-  # ========================================================
-  # 3. DEPLOY JOB (Starts ONLY after Test is complete)
-  # ========================================================
-  deploy:
-    name: 🚀 Production Deployment
-    needs: test                   # 👈 Test complete ayyake idi start avthundhi!
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🚀 Deploy Application Release
-        run: |
-          echo "=========================================="
-          echo "🚀 STAGE 3: PRODUCTION DEPLOYMENT PHASE"
-          echo "Deploying application to Production Server..."
-          sleep 3
-          echo "Health Check: HTTP 200 OK ✓"
-          echo "✅ Deployment Successful! Application is LIVE!"
+          echo "🔨 Starting Application Build on Push..."
+          echo "Branch Triggered: ${{ github.ref }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "A demo build completed successfully!"
           echo "=========================================="
