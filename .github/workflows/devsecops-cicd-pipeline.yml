@@ -1,27 +1,20 @@
-name: GitHub Action Demo
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
+name: Deploy HTML to S3
+on: push
 jobs:
-  action-demo:
-    name: 🚀 GitHub Marketplace Action Demo
+  deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: 📥 Checkout the code
+      - name: Checkout code from repo
         uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 1
 
-      - name: 📂 Verify Checked Out Repository Files
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Copy files to S3 with AWS CLI
         run: |
-          echo "=========================================="
-          echo "📁 Current Working Directory: $(pwd)"
-          echo "📄 Listing checked out repository files:"
-          ls -la
-          echo "=========================================="
+          aws s3 sync . s3://manoj-cicd-website-7007 --exclude ".git*" --exclude ".github*"
+          echo "Website deployed: http://manoj-cicd-website-7007.s3-website-us-east-1.amazonaws.com"
