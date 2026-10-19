@@ -1,4 +1,4 @@
-﻿name: Workflow & Job Outputs Pipeline
+﻿name: Job Outputs Demo Pipeline
 
 on:
   push:
@@ -8,65 +8,45 @@ on:
 
 jobs:
   # ========================================================
-  # JOB 1: PRODUCER JOB (Generates and Exports Outputs)
+  # JOB 1: PRODUCER (Creates and Exports Outputs)
   # ========================================================
-  build-and-package:
-    name: 🔨 Job 1 - Build & Generate Outputs
+  job1:
+    name: 🔨 Job 1 - Producer (Generate Outputs)
     runs-on: ubuntu-latest
-
-    # Exporting Job-Level Outputs to other dependent jobs
     outputs:
-      app_version: ${{ steps.create_build.outputs.VERSION }}
-      image_digest: ${{ steps.create_build.outputs.DIGEST }}
-      artifact_filename: ${{ steps.create_build.outputs.ARTIFACT }}
+      app_version: ${{ steps.step1.outputs.VERSION }}
+      build_status: ${{ steps.step1.outputs.STATUS }}
 
     steps:
-      - name: 📥 Checkout repository source code
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Generate Dynamic Build Outputs
-        id: create_build
+      - name: ⚙️ Set Step and Job Outputs
+        id: step1
         run: |
           echo "=========================================="
-          echo "🔨 JOB 1: Generating Build Metadata..."
-          
-          # Generating dynamic values
-          DYNAMIC_VERSION="v3.2.0-prod"
-          DYNAMIC_DIGEST="sha256:7f8a9b2c3d4e5f60"
-          DYNAMIC_ARTIFACT="enterprise-app-$DYNAMIC_VERSION.tar.gz"
-          
-          # Modern GitHub Actions Syntax to write outputs to $GITHUB_OUTPUT file
-          echo "VERSION=$DYNAMIC_VERSION" >> $GITHUB_OUTPUT
-          echo "DIGEST=$DYNAMIC_DIGEST" >> $GITHUB_OUTPUT
-          echo "ARTIFACT=$DYNAMIC_ARTIFACT" >> $GITHUB_OUTPUT
-          
-          echo "✅ Outputs successfully registered to GITHUB_OUTPUT!"
+          echo "🔨 JOB 1: Setting dynamic outputs..."
+          echo "VERSION=v4.0.0-release" >> $GITHUB_OUTPUT
+          echo "STATUS=SUCCESSFUL" >> $GITHUB_OUTPUT
+          echo "✅ Outputs registered into GITHUB_OUTPUT!"
           echo "=========================================="
 
-      - name: 🔄 Step-to-Step Data Sharing (Within Same Job)
+      - name: 🔗 Consume Output within Same Job (Step to Step)
         run: |
           echo "=========================================="
-          echo "🔗 [SAME JOB STEP SHARING]:"
-          echo "📦 Received App Version from previous step: ${{ steps.create_build.outputs.VERSION }}"
-          echo "🔑 Received Image Digest: ${{ steps.create_build.outputs.DIGEST }}"
+          echo "📦 Received within Job 1: ${{ steps.step1.outputs.VERSION }}"
           echo "=========================================="
 
   # ========================================================
-  # JOB 2: CONSUMER JOB (Receives Outputs from Job 1)
+  # JOB 2: CONSUMER (Uses Outputs from Job 1)
   # ========================================================
-  deploy-to-prod:
-    name: 🚀 Job 2 - Deploy Using Job 1 Outputs
-    needs: build-and-package
+  job2:
+    name: 🚀 Job 2 - Consumer (Use Job 1 Outputs)
+    needs: job1
     runs-on: ubuntu-latest
-
     steps:
-      - name: 🌐 Deploying with Job 1 Outputs
+      - name: 🌐 Print Outputs from Job 1 (Job to Job)
         run: |
           echo "=========================================="
-          echo "🚀 JOB 2: DEPLOYMENT PIPELINE ACTIVE!"
-          echo "🎯 Consuming Outputs from Job 1 (build-and-package):"
-          echo "📦 Target Version: ${{ needs.build-and-package.outputs.app_version }}"
-          echo "🔒 Verified Image Digest: ${{ needs.build-and-package.outputs.image_digest }}"
-          echo "📁 Target Artifact File: ${{ needs.build-and-package.outputs.artifact_filename }}"
-          echo "✅ Application successfully deployed with verified artifact!"
+          echo "🚀 JOB 2: Consuming data from Job 1:"
+          echo "🎯 Received App Version: ${{ needs.job1.outputs.app_version }}"
+          echo "📊 Received Build Status: ${{ needs.job1.outputs.build_status }}"
+          echo "✅ Data successfully shared across jobs!"
           echo "=========================================="
