@@ -7,7 +7,7 @@ on:
 
 jobs:
   # ========================================================
-  # 1. BUILD JOB
+  # 1. BUILD JOB (First to run)
   # ========================================================
   build:
     name: 🔨 Application Build
@@ -17,16 +17,17 @@ jobs:
         run: |
           echo "=========================================="
           echo "🔨 STAGE 1: APPLICATION BUILD PHASE"
-          echo "Triggered by: ${{ github.actor }}"
-          echo "Initializing compiler and validating source..."
-          echo "Build Status: SUCCESSFUL ✓"
+          echo "Compiling source code and preparing binaries..."
+          sleep 3
+          echo "✅ Build Completed Successfully!"
           echo "=========================================="
 
   # ========================================================
-  # 2. TEST JOB
+  # 2. TEST JOB (Starts ONLY after Build is complete)
   # ========================================================
   test:
     name: 🧪 Automated Testing
+    needs: build                  # 👈 Build complete ayyake idi start avthundhi!
     runs-on: ubuntu-latest
     steps:
       - name: 🧪 Execute Unit & Integration Tests
@@ -34,24 +35,26 @@ jobs:
           echo "=========================================="
           echo "🧪 STAGE 2: TEST AUTOMATION PHASE"
           echo "Running unit test suites..."
-          echo "Test Case 1 (Login Service): PASSED ✓"
-          echo "Test Case 2 (API Gateway):   PASSED ✓"
-          echo "Quality Gate: 100% SUCCESSFUL ✓"
+          sleep 3
+          echo "Test Case 1: PASSED ✓"
+          echo "Test Case 2: PASSED ✓"
+          echo "✅ All Tests Passed Successfully!"
           echo "=========================================="
 
   # ========================================================
-  # 3. DEPLOY JOB
+  # 3. DEPLOY JOB (Starts ONLY after Test is complete)
   # ========================================================
   deploy:
     name: 🚀 Production Deployment
+    needs: test                   # 👈 Test complete ayyake idi start avthundhi!
     runs-on: ubuntu-latest
     steps:
       - name: 🚀 Deploy Application Release
         run: |
           echo "=========================================="
           echo "🚀 STAGE 3: PRODUCTION DEPLOYMENT PHASE"
-          echo "Target Environment: AWS Cloud Production"
-          echo "Deploying artifacts to cluster..."
+          echo "Deploying application to Production Server..."
+          sleep 3
           echo "Health Check: HTTP 200 OK ✓"
-          echo "Status: APPLICATION IS LIVE & HEALTHY!"
+          echo "✅ Deployment Successful! Application is LIVE!"
           echo "=========================================="
