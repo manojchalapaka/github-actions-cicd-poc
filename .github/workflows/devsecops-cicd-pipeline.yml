@@ -2,7 +2,13 @@ name: Hello World
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+      - develop
+      - 'release/**'
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -13,8 +19,8 @@ jobs:
       - name: ⚙️ Build Step
         run: |
           echo "=========================================="
-          echo "🔨 Starting Application Build on Push..."
-          echo "Branch Triggered: ${{ github.ref }}"
+          echo "🔨 Starting Build for Event: ${{ github.event_name }}"
+          echo "Target Branch: ${{ github.ref }}"
           echo "Triggered by: ${{ github.actor }}"
           echo "A demo build completed successfully!"
           echo "=========================================="
