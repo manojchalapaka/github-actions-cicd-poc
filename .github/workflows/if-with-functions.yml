@@ -1,0 +1,69 @@
+﻿name: if-with-functions
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  workflow_dispatch:
+
+jobs:
+  # ========================================================
+  # 1. QUALITY CHECKS (Runs on feature/** branches)
+  # ========================================================
+  quality_cheks:
+    name: quality_cheks
+    if: startsWith(github.ref, 'refs/heads/feature/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Quality Checks
+        run: |
+          echo "Running static code quality checks on feature branch..."
+          echo "Quality checks passed successfully!"
+
+  # ========================================================
+  # 2. DEV DEPLOY (Runs on develop branch)
+  # ========================================================
+  dev_deploy:
+    name: dev_deploy
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Dev
+        run: echo "Deploying to development environment..."
+
+  # ========================================================
+  # 3. PROD DEPLOY (Runs on main branch)
+  # ========================================================
+  prod_deploy:
+    name: prod_deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Prod
+        run: echo "Deploying to production environment..."
+
+  # ========================================================
+  # 4. SUCCESS NOTIFY (Runs when jobs succeed)
+  # ========================================================
+  success_notify:
+    name: success_notify
+    needs: [quality_cheks, dev_deploy, prod_deploy]
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Success Alert
+        run: echo "Pipeline executed successfully! Sending success notification."
+
+  # ========================================================
+  # 5. FAILURE NOTIFY (Runs when any job fails)
+  # ========================================================
+  failure_notify:
+    name: failure_notify
+    needs: [quality_cheks, dev_deploy, prod_deploy]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Failure Alert
+        run: echo "Pipeline failed! Sending critical failure notification."
