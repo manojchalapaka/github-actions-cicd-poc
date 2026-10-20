@@ -2,10 +2,16 @@
 kind: Service
 metadata:
   name: pyapp-svc
+  labels:
+    app: pyapp
+    tier: frontend
+    managed-by: argocd
 spec:
   type: LoadBalancer
   selector:
     app: pyapp
   ports:
-    - port: 80
+    - name: http
+      protocol: TCP
+      port: 80
       targetPort: 8000
