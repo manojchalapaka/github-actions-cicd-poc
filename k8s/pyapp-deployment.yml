@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: pyapp-container
-          image: manojdevops07/pyapp:latest
+          image: manojdevops07/pyapp:c6e6515
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
