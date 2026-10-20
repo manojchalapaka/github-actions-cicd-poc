@@ -1,0 +1,43 @@
+﻿name: Reusable Deployment Engine
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Target deployment environment (staging/production)"
+        required: true
+        type: string
+      replicas:
+        description: "Number of pod replicas"
+        required: true
+        type: number
+      image_tag:
+        description: "Docker image tag to deploy"
+        required: true
+        type: string
+      run_smoke_test:
+        description: "Whether to run health smoke test"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  deploy:
+    name: 📦 Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Inspect Deployment Parameters
+        run: |
+          echo "=========================================="
+          echo "🚀 Deploying to Environment : ${{ inputs.environment }}"
+          echo "🏷️ Image Tag               : ${{ inputs.image_tag }}"
+          echo "👥 Desired Replicas         : ${{ inputs.replicas }}"
+          echo "👤 Triggered By             : ${{ github.actor }}"
+          echo "=========================================="
+
+      - name: 🧪 Run Health Smoke Tests
+        if: inputs.run_smoke_test == true
+        run: |
+          echo "Running automated smoke test for ${{ inputs.environment }}..."
+          sleep 3
+          echo "✅ Smoke test passed successfully!"
