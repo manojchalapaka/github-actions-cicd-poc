@@ -1,0 +1,68 @@
+﻿name: Kubernetes CI/CD GitOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'k8s/**'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  pyapp-ci:
+    name: 🚀 Build, Scan & Publish Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Code Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🐳 Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pyapp:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/pyapp:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/pyapp:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  update-gitops-manifest:
+    name: 📝 Update GitOps Manifest for ArgoCD
+    needs: pyapp-ci
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Manifest Repo
+        uses: actions/checkout@v4
+
+      - name: 🔄 Update Image Tag in Deployment YAML
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "Updating deployment manifest with new image tag: ${SHORT_SHA}"
+          sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/pyapp:${SHORT_SHA}|g" k8s/pyapp-deployment.yml
+
+      - name: 🚀 Commit and Push Updated Manifest
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add k8s/pyapp-deployment.yml
+          git commit -m "chore(gitops): auto-update pyapp image tag to ${{ github.sha }} [skip ci]" || echo "No changes to commit"
+          git push origin main
