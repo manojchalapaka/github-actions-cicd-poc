@@ -17,52 +17,46 @@ env:
   IMAGE_NAME: "pyapp"
 
 jobs:
-  # ========================================================
-  # STAGE 1: CODE QUALITY & LINTING
-  # ========================================================
   code-quality:
-    name: Stage 1: Code Quality & Lint
+    name: "Stage 1 - Code Quality and Lint"
     runs-on: ubuntu-latest
     steps:
-      - name: ?? Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: ?? Set up Python 3.9
+      - name: Set up Python 3.9
         uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
-      - name: ?? Verify Syntax and Dependencies
+      - name: Verify Syntax and Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m py_compile main.py
-          echo "? Python code syntax and requirements verified!"
+          echo "Python code syntax and requirements verified!"
 
-  # ========================================================
-  # STAGE 2: BUILD, TAG & PUBLISH CONTAINER (OUTPUTS DEMO)
-  # ========================================================
   build-and-publish:
-    name: Stage 2: Build & Push Docker Image
+    name: "Stage 2 - Build and Push Docker Image"
     needs: code-quality
     runs-on: ubuntu-latest
     outputs:
       BUILT_TAG: ${{ steps.export-tag.outputs.TAG }}
       COMMIT_AUTHOR: ${{ steps.export-tag.outputs.AUTHOR }}
     steps:
-      - name: ?? Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: ?? Set up Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: ?? Log in to Docker Hub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: ??? Calculate Image Tag & Export Outputs
+      - name: Calculate Image Tag and Export Outputs
         id: export-tag
         run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
@@ -70,7 +64,7 @@ jobs:
           echo "AUTHOR=${{ github.actor }}" >> "$GITHUB_OUTPUT"
           echo "Exported Image Tag: ${SHORT_SHA}"
 
-      - name: ?? Build and Push Image with GHA Caching
+      - name: Build and Push Image with GHA Caching
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -81,11 +75,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ========================================================
-  # STAGE 3: CALL REUSABLE WORKFLOW (STAGING)
-  # ========================================================
   deploy-staging:
-    name: Stage 3: Reusable Deploy to STAGING
+    name: "Stage 3 - Reusable Deploy to STAGING"
     needs: build-and-publish
     uses: ./.github/workflows/reusable-deploy.yml
     with:
@@ -94,11 +85,8 @@ jobs:
       replicas: 2
       run_smoke_test: true
 
-  # ========================================================
-  # STAGE 4: CALL REUSABLE WORKFLOW (PRODUCTION)
-  # ========================================================
   deploy-production:
-    name: Stage 4: Reusable Deploy to PRODUCTION
+    name: "Stage 4 - Reusable Deploy to PRODUCTION"
     needs: [build-and-publish, deploy-staging]
     uses: ./.github/workflows/reusable-deploy.yml
     with:
@@ -107,28 +95,24 @@ jobs:
       replicas: 3
       run_smoke_test: true
 
-  # ========================================================
-  # STAGE 5: GITOPS AUTOMATED MANIFEST UPDATE FOR ARGOCD
-  # ========================================================
   gitops-manifest-update:
-    name: Stage 5: GitOps Manifest Update for EKS
+    name: "Stage 5 - GitOps Manifest Update for EKS"
     needs: [build-and-publish, deploy-production]
     runs-on: ubuntu-latest
     steps:
-      - name: ?? Checkout Manifests
+      - name: Checkout Manifests
         uses: actions/checkout@v4
 
-      - name: ?? Update Deployment YAML with Output Tag
+      - name: Update Deployment YAML with Output Tag
         run: |
           PROD_TAG="${{ needs.build-and-publish.outputs.BUILT_TAG }}"
           echo "Updating k8s/pyapp-deployment.yml with production tag: ${PROD_TAG}"
           sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${PROD_TAG}|g" k8s/pyapp-deployment.yml
 
-      - name: ?? Commit & Push to Main (Triggers ArgoCD)
+      - name: Commit and Push to Main
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add k8s/pyapp-deployment.yml
           git commit -m "chore(gitops): promote pyapp to tag ${{ needs.build-and-publish.outputs.BUILT_TAG }} [skip ci]" || echo "No changes to commit"
           git push origin main
-
