@@ -1,0 +1,28 @@
+﻿name: Reusable Deployment Engine
+
+on:
+  workflow_call:
+    inputs:
+      target_env:
+        description: 'Target Deployment Environment'
+        required: true
+        type: string
+      app_version:
+        description: 'Application Release Version'
+        required: true
+        type: string
+
+jobs:
+  shared-deploy-job:
+    name: ⚙️ Shared Deployment Logic
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚀 Execute Deployment Template
+        run: |
+          echo "=========================================="
+          echo "🔄 [REUSABLE WORKFLOW EXECUTING]..."
+          echo "🌍 Target Environment: ${{ inputs.target_env }}"
+          echo "📦 Application Version: ${{ inputs.app_version }}"
+          echo "👤 Triggered by Caller: ${{ github.actor }}"
+          echo "✅ Successfully deployed to [${{ inputs.target_env }}] via shared template!"
+          echo "=========================================="
