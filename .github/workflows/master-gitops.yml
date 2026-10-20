@@ -1,4 +1,4 @@
-name: Master EKS GitOps CI/CD Pipeline
+﻿name: Master EKS GitOps CI/CD Pipeline
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
   # STAGE 1: CODE QUALITY & LINTING
   # ========================================================
   code-quality:
-    name: ?? Stage 1 - Code Quality & Lint
+    name: Stage 1: Code Quality & Lint
     runs-on: ubuntu-latest
     steps:
       - name: ?? Checkout Code
@@ -43,7 +43,7 @@ jobs:
   # STAGE 2: BUILD, TAG & PUBLISH CONTAINER (OUTPUTS DEMO)
   # ========================================================
   build-and-publish:
-    name: ?? Stage 2 - Build & Push Docker Image
+    name: Stage 2: Build & Push Docker Image
     needs: code-quality
     runs-on: ubuntu-latest
     outputs:
@@ -85,7 +85,7 @@ jobs:
   # STAGE 3: CALL REUSABLE WORKFLOW (STAGING)
   # ========================================================
   deploy-staging:
-    name: ?? Stage 3 - Reusable Deploy to STAGING
+    name: Stage 3: Reusable Deploy to STAGING
     needs: build-and-publish
     uses: ./.github/workflows/reusable-deploy.yml
     with:
@@ -98,7 +98,7 @@ jobs:
   # STAGE 4: CALL REUSABLE WORKFLOW (PRODUCTION)
   # ========================================================
   deploy-production:
-    name: ?? Stage 4 - Reusable Deploy to PRODUCTION
+    name: Stage 4: Reusable Deploy to PRODUCTION
     needs: [build-and-publish, deploy-staging]
     uses: ./.github/workflows/reusable-deploy.yml
     with:
@@ -111,7 +111,7 @@ jobs:
   # STAGE 5: GITOPS AUTOMATED MANIFEST UPDATE FOR ARGOCD
   # ========================================================
   gitops-manifest-update:
-    name: ?? Stage 5 - GitOps Manifest Update for EKS
+    name: Stage 5: GitOps Manifest Update for EKS
     needs: [build-and-publish, deploy-production]
     runs-on: ubuntu-latest
     steps:
@@ -131,3 +131,4 @@ jobs:
           git add k8s/pyapp-deployment.yml
           git commit -m "chore(gitops): promote pyapp to tag ${{ needs.build-and-publish.outputs.BUILT_TAG }} [skip ci]" || echo "No changes to commit"
           git push origin main
+

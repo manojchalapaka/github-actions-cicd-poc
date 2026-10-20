@@ -23,10 +23,10 @@ on:
 
 jobs:
   deploy:
-    name: 📦 Deploy to ${{ inputs.environment }}
+    name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
-      - name: 🔍 Inspect Deployment Parameters
+      - name: Inspect Deployment Parameters
         run: |
           echo "=========================================="
           echo "🚀 Deploying to Environment : ${{ inputs.environment }}"
@@ -35,9 +35,10 @@ jobs:
           echo "👤 Triggered By             : ${{ github.actor }}"
           echo "=========================================="
 
-      - name: 🧪 Run Health Smoke Tests
+      - name: Run Health Smoke Tests
         if: inputs.run_smoke_test == true
         run: |
           echo "Running automated smoke test for ${{ inputs.environment }}..."
           sleep 3
           echo "✅ Smoke test passed successfully!"
+
