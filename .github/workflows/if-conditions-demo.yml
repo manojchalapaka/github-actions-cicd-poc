@@ -1,0 +1,62 @@
+﻿name: If Conditions & Branch Filtering Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # ========================================================
+  # JOB 1: STANDARD BUILD JOB
+  # ========================================================
+  build-job:
+    name: 🔨 Job 1 - Application Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⚙️ Run Standard Build
+        run: |
+          echo "=========================================="
+          echo "🔨 Compiling application source code..."
+          echo "✅ Build completed successfully!"
+          echo "=========================================="
+
+      - name: 🔔 Run Only on Success (Step-Level Condition)
+        if: success()
+        run: |
+          echo "🎉 Step-Level Check: Previous steps succeeded! Sending success heartbeat."
+
+      - name: 🧹 Always Run Cleanup (Step-Level Condition)
+        if: always()
+        run: |
+          echo "🧹 Cleanup Task: Executed regardless of pass or fail (if: always)."
+
+  # ========================================================
+  # JOB 2: JOB-LEVEL CONDITION (RUNS ON MAIN BRANCH)
+  # ========================================================
+  prod-deploy:
+    name: 🚀 Job 2 - Production Deploy (Runs on Main)
+    needs: build-job
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🌐 Deploying to Production
+        run: |
+          echo "=========================================="
+          echo "🚀 CONDITION MET: github.ref is main!"
+          echo "🎯 Deploying application to Production Server..."
+          echo "✅ Production Deployment Active!"
+          echo "=========================================="
+
+  # ========================================================
+  # JOB 3: JOB-LEVEL CONDITION (WILL BE SKIPPED!)
+  # ========================================================
+  hotfix-deploy:
+    name: 🩹 Job 3 - Hotfix Deploy (Will be SKIPPED)
+    needs: build-job
+    if: github.ref == 'refs/heads/hotfix'
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⚠️ Hotfix Step
+        run: |
+          echo "This step will NOT run because condition evaluated to false!"
